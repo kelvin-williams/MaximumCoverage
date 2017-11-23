@@ -27,6 +27,8 @@
     return aux;
  }
 
+void NeighbourMove(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution);
+
  void GenerateSolution(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution){
      
     std::srand(std::time(0));
@@ -60,7 +62,88 @@
         }
     }
 
+    std::cout << "\n\nSolução obtida primeiro: \n";
 
+    int acc = 0;
+
+    for(int i = 0; i < facilities; i++){
+
+        std::cout << "\nFac ponto " << solution[i][0] << ": (" <<clients[ ((solution[i])[0]) ].x << ", " << clients[ ((solution[i])[0]) ].y << ")  || Pontos: ";
+
+        for(int j = 1; j < solution[i].size(); j++){
+            std::cout<< ((solution[i])[j]) << ", ";
+        }
+        acc += (solution[i]).size()-1;
+    }
+
+    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
+
+
+    NeighbourMove(clients, facilities, range, solution);
+
+    std::cout << "\n\nSolução obtida depois do movimento: \n";
+
+    acc = 0;
+
+    for(int i = 0; i < facilities; i++){
+
+        std::cout << "\nFac ponto " << solution[i][0] << ": (" <<clients[ ((solution[i])[0]) ].x << ", " << clients[ ((solution[i])[0]) ].y << ")  || Pontos: ";
+
+        for(int j = 1; j < solution[i].size(); j++){
+            std::cout<< ((solution[i])[j]) << ", ";
+        }
+        acc += (solution[i]).size()-1;
+    }
+
+    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
+
+ }
+
+ void NeighbourMove(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution){
+
+     int leastclients = INT_MAX;
+     int leastclientsindex;
+
+     //Primeiro procura a facilitadora que possui menos pontos cobertos
+     for(int i = 0; i < facilities; i++){
+
+         if(solution[i].size()-1 < leastclients){
+             leastclients = solution[i].size()-1;
+             leastclientsindex = i;
+         }
+     }
+
+     //Subtitui pelo próximo ponto livre
+     for(int i = ((solution[leastclientsindex])[0] + 1); i < clients.size(); i = (i+1)%(clients.size()-1)){
+
+         if(!(clients[i].visited)){//Se o ponto ainda não foi incluido na solução
+            
+            solution[leastclientsindex].clear();
+
+            (solution[leastclientsindex]).push_back(i);//O primeiro elemento dos vectors será sempre a própria facilitadora
+            clients[i].visited = true;
+
+            //Percorre todos os outros pontos e adiciona eles ao conjuntos desta facilitadora
+            //se eles estiverem dentro do raio de cobertura dela
+            //e se eles ainda não tiverem sido visitados por outra facilitadora
+            for(int j = 0; j < clients.size(); j++){
+                if(!(clients[j].visited)){
+                //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
+                    float dist = sqrt(((clients[i].x - clients[j].x)*(clients[i].x - clients[j].x)) + ((clients[i].y - clients[j].y)*(clients[i].y - clients[j].y)));
+            
+                    if(dist <= range){//Se o ponto está na área de cobertura da facilitadora
+
+                        (solution[leastclientsindex]).push_back(j);
+                        clients[j].visited = true;
+                    }
+                }
+            }
+         }else{
+
+             if(i == (solution[leastclientsindex])[0])
+                break;
+         }
+     }
  }
 
 int main(){
@@ -79,7 +162,9 @@ int main(){
     std::vector <int> solution [nfacilities];
 
     GenerateSolution(clients, nfacilities, range, solution);
-    
+
+   //Print de Solução
+   /* 
     std::cout << "\n\nSolução obtida: \n";
 
     int acc = 0;
@@ -95,6 +180,7 @@ int main(){
     }
 
     std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
+    */
 
     return 0;
 }
