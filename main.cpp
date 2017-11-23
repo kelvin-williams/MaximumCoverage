@@ -118,6 +118,13 @@ void NeighbourMove(std::vector <struct point> clients, int facilities, int range
 
          if(!(clients[i].visited)){//Se o ponto ainda não foi incluido na solução
             
+           std::cout << "\nsize do vetor a ser retirado: " << solution[leastclientsindex].size();
+            //Retira os pontos que estavam incluídos da solução
+            for(int u = 0; u < solution[leastclientsindex].size(); u++){
+
+                clients[ solution[leastclientsindex][u] ].visited = false;
+            }
+
             solution[leastclientsindex].clear();
 
             (solution[leastclientsindex]).push_back(i);//O primeiro elemento dos vectors será sempre a própria facilitadora
@@ -138,6 +145,8 @@ void NeighbourMove(std::vector <struct point> clients, int facilities, int range
                     }
                 }
             }
+
+            break;
          }else{
 
              if(i == (solution[leastclientsindex])[0])
