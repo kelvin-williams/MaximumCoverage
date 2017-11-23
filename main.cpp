@@ -27,9 +27,11 @@
     return aux;
  }
 
-void NeighbourMove(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution);
+void NeighbourMove(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution);
 
- void GenerateSolution(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution){
+
+
+ void GenerateSolution(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
      
     std::srand(std::time(0));
 
@@ -99,7 +101,7 @@ void NeighbourMove(std::vector <struct point> clients, int facilities, int range
 
  }
 
- void NeighbourMove(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution){
+ void NeighbourMove(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
 
      int leastclients = INT_MAX;
      int leastclientsindex;
