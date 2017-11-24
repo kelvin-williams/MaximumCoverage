@@ -83,7 +83,8 @@
             for(int k = 0; k < clients.size(); k++){
             
                 if(!(clients[k].visited)){
-                
+                    
+                    //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
                     float dist = sqrt(((clients[j].x - clients[k].x)*(clients[j].x - clients[k].x)) + ((clients[j].y - clients[k].y)*(clients[j].y - clients[k].y)));
             
                     if(dist <= range){
@@ -107,6 +108,7 @@
             }
         }
         
+        //Adiciona esse elemento à solução
         (solution[i]).push_back(fac);//O primeiro elemento dos vectors será sempre a própria facilitadora
         clients[fac].visited = true;
 
@@ -186,6 +188,52 @@
      }
  }
 
+void NeighbourMove2(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
+
+     for(int k = 0; k < facilities; k++){
+
+     //Subtitui pelo próximo ponto livre
+     for(int i = ((solution[k])[0] + 1); i < clients.size(); i = (i+1)%(clients.size()-1)){
+
+         if(!(clients[i].visited)){//Se o ponto ainda não foi incluido na solução
+            
+           //std::cout << "\nsize do vetor a ser retirado: " << solution[k].size();
+            //Retira os pontos que estavam incluídos da solução
+            for(int u = 0; u < solution[k].size(); u++){
+
+                clients[ solution[k][u] ].visited = false;
+            }
+
+            solution[k].clear();
+
+            (solution[k]).push_back(i);//O primeiro elemento dos vectors será sempre a própria facilitadora
+            clients[i].visited = true;
+
+            //Percorre todos os outros pontos e adiciona eles ao conjuntos desta facilitadora
+            //se eles estiverem dentro do raio de cobertura dela
+            //e se eles ainda não tiverem sido visitados por outra facilitadora
+            for(int j = 0; j < clients.size(); j++){
+                if(!(clients[j].visited)){
+                //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
+                    float dist = sqrt(((clients[i].x - clients[j].x)*(clients[i].x - clients[j].x)) + ((clients[i].y - clients[j].y)*(clients[i].y - clients[j].y)));
+            
+                    if(dist <= range){//Se o ponto está na área de cobertura da facilitadora
+
+                        (solution[k]).push_back(j);
+                        clients[j].visited = true;
+                    }
+                }
+            }
+
+            break;
+         }else{
+
+             if(i == (solution[k])[0])
+                break;
+         }
+     }
+ }
+}
 
 void VND(std::vector <struct point> clients, int facilities, int range){
 
@@ -200,13 +248,13 @@ void VND(std::vector <struct point> clients, int facilities, int range){
     for(int i = 0; i < facilities; i++)
         s1value += solution[i].size() - 1;
 
-    //
+
     for(int k = 0; k < 10; k++){
         std::vector <int> solution2 [facilities] = solution;
         std::vector <struct point> s2clients = s1clients;
         int s2value = 0;
 
-        NeighbourMove(s2clients, facilities, range, solution2);
+        NeighbourMove2(s2clients, facilities, range, solution2);
 
         //Calcula o valor da solução 2
         for(int i = 0; i < facilities; i++)
@@ -241,7 +289,7 @@ void VND(std::vector <struct point> clients, int facilities, int range){
         acc += (solution[i]).size()-1;
     }
 
-    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados\n";
+    std::cout << "\n\n"<< acc <<" Pontos alcançados\n";
 }
 
 int main(){
