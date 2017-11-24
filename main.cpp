@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
+#include <iterator>
 
  std::vector <struct point> ReadFile(const char * str, int * nfacilities, int * range){
     
@@ -26,9 +27,6 @@
     aux.erase(aux.end()-1);
     return aux;
  }
-
-void NeighbourMove(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution);
-
 
 
  void GenerateSolution(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
@@ -64,41 +62,6 @@ void NeighbourMove(std::vector <struct point> & clients, int facilities, int ran
         }
     }
 
-    std::cout << "\n\nSolução obtida primeiro: \n";
-
-    int acc = 0;
-
-    for(int i = 0; i < facilities; i++){
-
-        std::cout << "\nFac ponto " << solution[i][0] << ": (" <<clients[ ((solution[i])[0]) ].x << ", " << clients[ ((solution[i])[0]) ].y << ")  || Pontos: ";
-
-        for(int j = 1; j < solution[i].size(); j++){
-            std::cout<< ((solution[i])[j]) << ", ";
-        }
-        acc += (solution[i]).size()-1;
-    }
-
-    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
-
-
-    NeighbourMove(clients, facilities, range, solution);
-
-    std::cout << "\n\nSolução obtida depois do movimento: \n";
-
-    acc = 0;
-
-    for(int i = 0; i < facilities; i++){
-
-        std::cout << "\nFac ponto " << solution[i][0] << ": (" <<clients[ ((solution[i])[0]) ].x << ", " << clients[ ((solution[i])[0]) ].y << ")  || Pontos: ";
-
-        for(int j = 1; j < solution[i].size(); j++){
-            std::cout<< ((solution[i])[j]) << ", ";
-        }
-        acc += (solution[i]).size()-1;
-    }
-
-    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
-
  }
 
  void NeighbourMove(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
@@ -120,7 +83,7 @@ void NeighbourMove(std::vector <struct point> & clients, int facilities, int ran
 
          if(!(clients[i].visited)){//Se o ponto ainda não foi incluido na solução
             
-           std::cout << "\nsize do vetor a ser retirado: " << solution[leastclientsindex].size();
+           //std::cout << "\nsize do vetor a ser retirado: " << solution[leastclientsindex].size();
             //Retira os pontos que estavam incluídos da solução
             for(int u = 0; u < solution[leastclientsindex].size(); u++){
 
@@ -157,6 +120,64 @@ void NeighbourMove(std::vector <struct point> & clients, int facilities, int ran
      }
  }
 
+
+void VND(std::vector <struct point> clients, int facilities, int range){
+
+    //Primeiramente nós pegamos uma solução qualquer
+    std::vector <int> solution [facilities];
+    std::vector <struct point> s1clients = clients;
+    int s1value = 0;
+
+    GenerateSolution(s1clients, facilities, range, solution);
+
+    //Calcula o "valor da solução" (número total de clientes atendidos)
+    for(int i = 0; i < facilities; i++)
+        s1value += solution[i].size() - 1;
+
+    //
+    for(int k = 0; k < 10; k++){
+        std::vector <int> solution2 [facilities] = solution;
+        std::vector <struct point> s2clients = s1clients;
+        int s2value = 0;
+
+        NeighbourMove(s2clients, facilities, range, solution2);
+
+        //Calcula o valor da solução 2
+        for(int i = 0; i < facilities; i++)
+            s2value += solution2[i].size() - 1;
+
+
+        if(s2value > s1value){//Se a nova solução for melhor
+            std::cout << "\n" << s2value << " é maior que "<< s1value;
+            //solution = solution2
+            for(int m = 0; m < facilities; m++)
+                solution[m] = solution2[m];
+
+            s1clients = s1clients;
+            s1value = s2value;
+            
+            k = 0;
+        }
+    }
+
+    //Printando a melhor solução:
+    std::cout << "\n\nMelhor solução obtida: \n";
+
+    int acc = 0;
+
+    for(int i = 0; i < facilities; i++){
+
+        std::cout << "\nFac ponto " << solution[i][0] << ": (" <<s1clients[ ((solution[i])[0]) ].x << ", " << s1clients[ ((solution[i])[0]) ].y << ")  || Pontos: ";
+
+        for(int j = 1; j < solution[i].size(); j++){
+            std::cout<< ((solution[i])[j]) << ", ";
+        }
+        acc += (solution[i]).size()-1;
+    }
+
+    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
+}
+
 int main(){
 
     int nfacilities, range;
@@ -165,14 +186,17 @@ int main(){
      
     std::cout << "\n\nNfac: " << nfacilities << "\nRange: " << range;
 
+    
+    VND(clients, nfacilities, range);
+    
     // for(int i = 0; i < clients.size();i++){
 
      //   std::cout << "\n(" << clients[i].x << ", " << clients[i].y << ")";
     // }
 
-    std::vector <int> solution [nfacilities];
+    //std::vector <int> solution [nfacilities];
 
-    GenerateSolution(clients, nfacilities, range, solution);
+    //GenerateSolution(clients, nfacilities, range, solution);
 
    //Print de Solução
    /* 
