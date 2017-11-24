@@ -4,6 +4,7 @@
 #include <ctime>
 #include <math.h>
 #include <iterator>
+#include <map>
 
  std::vector <struct point> ReadFile(const char * str, int * nfacilities, int * range){
     
@@ -60,6 +61,71 @@
                 }
             }
         }
+    }
+
+ }
+
+ void GenerateSolution2(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
+
+
+    for(int i = 0; i < facilities; i++){
+
+        std::map <int, int> values;//Este mapa vai guardar os valores de cada ponto se ele fosse uma facilitadora
+
+        for(int j = 0; j < clients.size(); j++){
+        
+            values[j] = 0;
+        }
+
+
+        for(int j = 0; j < clients.size(); j++){
+        
+            for(int k = 0; k < clients.size(); k++){
+            
+                if(!(clients[k].visited)){
+                
+                    float dist = sqrt(((clients[j].x - clients[k].x)*(clients[j].x - clients[k].x)) + ((clients[j].y - clients[k].y)*(clients[j].y - clients[k].y)));
+            
+                    if(dist <= range){
+                    
+                        values[j]++;
+                    }
+                }
+            }
+        }
+        
+        int fac;
+        int biggest = 0;
+
+        //Procura o elemento com o maior valor do mapa
+        for(int j = 0; j < clients.size(); j++){
+        
+            if(values[j] > biggest && clients[j].visited == false){
+                
+                biggest = values[j];
+                fac = j;
+            }
+        }
+        
+        (solution[i]).push_back(fac);//O primeiro elemento dos vectors será sempre a própria facilitadora
+        clients[fac].visited = true;
+
+        //Percorre todos os outros pontos e adiciona eles ao conjuntos desta facilitadora
+        //se eles estiverem dentro do raio de cobertura dela
+        //e se eles ainda não tiverem sido visitados por outra facilitadora
+        for(int j = 0; j < clients.size(); j++){
+            if(!(clients[j].visited)){
+            //Calcula a distância: sqrt( (Xa - Xb)² + (Ya - Yb)²)
+                float dist = sqrt(((clients[fac].x - clients[j].x)*(clients[fac].x - clients[j].x)) + ((clients[fac].y - clients[j].y)*(clients[fac].y - clients[j].y)));
+            
+                if(dist <= range){//Se o ponto está na área de cobertura da facilitadora
+
+                    (solution[i]).push_back(j);
+                    clients[j].visited = true;
+                }
+            }
+        }
+    
     }
 
  }
@@ -128,7 +194,7 @@ void VND(std::vector <struct point> clients, int facilities, int range){
     std::vector <struct point> s1clients = clients;
     int s1value = 0;
 
-    GenerateSolution(s1clients, facilities, range, solution);
+    GenerateSolution2(s1clients, facilities, range, solution);
 
     //Calcula o "valor da solução" (número total de clientes atendidos)
     for(int i = 0; i < facilities; i++)
@@ -175,7 +241,7 @@ void VND(std::vector <struct point> clients, int facilities, int range){
         acc += (solution[i]).size()-1;
     }
 
-    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados :)\n";
+    std::cout << "\n\nTotal obtido: "<< acc <<" pontos alcançados\n";
 }
 
 int main(){
