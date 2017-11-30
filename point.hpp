@@ -9,6 +9,7 @@ struct point{
     int x;
     int y;
     bool visited;
+    bool facility;
 };
 
 #endif /* POINT_HPP */
