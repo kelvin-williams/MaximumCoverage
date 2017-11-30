@@ -277,45 +277,79 @@
 void NeighbourMove2(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
 
     for(int k = 0; k < facilities; k++){
+        
+        //Primeiro retira a facilitadora da solução
+        clients[ solution[k][0] ].facility = false;
 
-        //Subtitui pelo próximo ponto livre
-        for(int i = ((solution[k])[0] + 1); i < clients.size(); i = (i+1)%(clients.size()-1)){
+        for(int u = 0; u < solution[k].size(); u++){
 
-            if(!(clients[i].visited)){//Se o ponto ainda não foi incluido na solução
-                
-            //std::cout << "\nsize do vetor a ser retirado: " << solution[k].size();
-                //Retira os pontos que estavam incluídos da solução
-                for(int u = 0; u < solution[k].size(); u++){
+            clients[ solution[k][u] ].visited = false;
+        }
 
-                    clients[ solution[k][u] ].visited = false;
-                }
+        solution[k].clear();
 
-                solution[k].clear();
 
-                (solution[k]).push_back(i);//O primeiro elemento dos vectors será sempre a própria facilitadora
-                clients[i].visited = true;
+        //Calcula o valor dos pontos que não pertencem à solução
+        std::map <int, int> values;
 
-                //Percorre todos os outros pontos e adiciona eles ao conjuntos desta facilitadora
-                //se eles estiverem dentro do raio de cobertura dela
-                //e se eles ainda não tiverem sido visitados por outra facilitadora
-                for(int j = 0; j < clients.size(); j++){
-                    if(!(clients[j].visited)){
-                    //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
-                        float dist = sqrt(((clients[i].x - clients[j].x)*(clients[i].x - clients[j].x)) + ((clients[i].y - clients[j].y)*(clients[i].y - clients[j].y)));
-                
-                        if(dist <= range){//Se o ponto está na área de cobertura da facilitadora
+        for(int j = 0; j < clients.size(); j++){
+        
+            values[j] = 0;
+        }
 
-                            (solution[k]).push_back(j);
-                            clients[j].visited = true;
+
+        for(int j = 0; j < clients.size(); j++){
+            
+            if(!(clients[j].visited)){
+
+                for(int l = 0; l < clients.size(); l++){
+            
+                    if(!(clients[l].visited)){
+                    
+                        //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
+                        float dist = sqrt(((clients[j].x - clients[l].x)*(clients[j].x - clients[l].x)) + ((clients[j].y - clients[l].y)*(clients[j].y - clients[l].y)));
+            
+                        if(dist <= range){
+                    
+                            values[j]++;
                         }
                     }
                 }
+            }
+        }
+        
+        int fac;
+        int biggest = 0;
 
-                break;
-            }else{
+        //Procura o elemento com o maior valor do mapa
+        for(int j = 0; j < clients.size(); j++){
+        
+            if(values[j] > biggest){
+                
+                biggest = values[j];
+                fac = j;
+            }
+        }
 
-                if(i == (solution[k])[0])
-                    break;
+        //Inclui este elemento na solução
+
+        (solution[k]).push_back(fac);//O primeiro elemento dos vectors será sempre a própria facilitadora
+        clients[fac].visited = true;
+        clients[fac].facility = true;
+
+        //Percorre todos os outros pontos e adiciona eles ao conjuntos desta facilitadora
+        //se eles estiverem dentro do raio de cobertura dela
+        //e se eles ainda não tiverem sido visitados por outra facilitadora
+        for(int j = 0; j < clients.size(); j++){
+            if(!(clients[j].visited)){
+                //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
+                float dist = sqrt(((clients[fac].x - clients[j].x)*(clients[fac].x - clients[j].x)) + ((clients[fac].y - clients[j].y)*(clients[fac].y - clients[j].y)));
+    
+                if(dist <= range){//Se o ponto está na área de cobertura da facilitadora
+
+                    (solution[k]).push_back(j);
+                    clients[j].visited = true;
+                }
             }
         }
     }
@@ -347,11 +381,11 @@ void NeighbourMove2Heavy(std::vector <struct point> & clients, int facilities, i
 
         for(int j = 0; j < clients.size(); j++){
             
-            if(!(clients[j].facility)){
+            if((clients[j].facility) == false){
 
                 for(int l = 0; l < clients.size(); l++){
             
-                    if(!(clients[l].facility)){
+                    if(!(clients[l].visited)){
                     
                         //Calcula a distância: sqrt( (Xa-Xb)² + (Ya - Yb)²)
                         float dist = sqrt(((clients[j].x - clients[l].x)*(clients[j].x - clients[l].x)) + ((clients[j].y - clients[l].y)*(clients[j].y - clients[l].y)));
@@ -383,11 +417,11 @@ void NeighbourMove2Heavy(std::vector <struct point> & clients, int facilities, i
 
             for(int i = 0; i < facilities; i++){
 
-                for(int m = 0; m < solution[i].size(); m++){
+                for(int j = 0; j < solution[i].size(); j++){
 
-                    if(solution[i][m] == fac){
-
-                        solution[i].erase(solution[i].begin() + m);
+                    if(solution[i][j] == fac){
+            
+                        solution[i].erase(solution[i].begin() + j);
                         clients[fac].visited = false;
                         break;
                     }
@@ -452,7 +486,13 @@ void VND(std::vector <struct point> clients, int facilities, int range){
             s2value += solution2[i].size() - 1;
 
         std::cout << "\nTentando trocar solução com valor " << s1value << " para uma com valor "<< s2value;
-                
+        
+        if(k==0){
+            std::cout << " usando movimento leve";
+        }else{
+            std::cout << " usando movimento pesado";
+        }
+
         if(s2value > s1value){//Se a nova solução for melhor
             std::cout << "\nTrocando solução com valor " << s1value << " para uma com valor "<< s2value;
             //solution = solution2
