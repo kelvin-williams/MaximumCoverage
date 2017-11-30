@@ -7,6 +7,7 @@
 #include <map>
 
 #define ALPHA 0.5
+#define NUM_GRASP_ITERATIONS 10
 
  std::vector <struct point> ReadFile(const char * str, int * nfacilities, int * range){
     
@@ -135,8 +136,6 @@
  }
 
   void GenerateSolution2Random(std::vector <struct point> & clients, int facilities, int range, std::vector <int> * solution){
-
-    std::srand(std::time(0));
 
     for(int i = 0; i < facilities; i++){
 
@@ -456,10 +455,9 @@ void NeighbourMove2Heavy(std::vector <struct point> & clients, int facilities, i
 
 
 
-void VND(std::vector <struct point> clients, int facilities, int range){
+int VND(std::vector <struct point> clients, int facilities, int range, std::vector <int> * solution){
 
     //Primeiramente nós pegamos uma solução qualquer
-    std::vector <int> solution [facilities];
     std::vector <struct point> s1clients = clients;
     int s1value = 0;
 
@@ -471,7 +469,11 @@ void VND(std::vector <struct point> clients, int facilities, int range){
 
     int k = 0;
     while(k < 2){
-        std::vector <int> solution2 [facilities] = solution;
+        std::vector <int> solution2 [facilities];
+
+        for(int m = 0; m < facilities; m++)
+                solution2[m] = solution[m];
+
         std::vector <struct point> s2clients = s1clients;
         int s2value = 0;
         
@@ -485,16 +487,16 @@ void VND(std::vector <struct point> clients, int facilities, int range){
         for(int i = 0; i < facilities; i++)
             s2value += solution2[i].size() - 1;
 
-        std::cout << "\nTentando trocar solução com valor " << s1value << " para uma com valor "<< s2value;
+      //  std::cout << "\nTentando trocar solução com valor " << s1value << " para uma com valor "<< s2value;
         
-        if(k==0){
-            std::cout << " usando movimento leve";
-        }else{
-            std::cout << " usando movimento pesado";
-        }
+     //   if(k==0){
+     //       std::cout << " usando movimento leve";
+     //   }else{
+     //       std::cout << " usando movimento pesado";
+     //   }
 
         if(s2value > s1value){//Se a nova solução for melhor
-            std::cout << "\nTrocando solução com valor " << s1value << " para uma com valor "<< s2value;
+           // std::cout << "\nTrocando solução com valor " << s1value << " para uma com valor "<< s2value;
             //solution = solution2
             for(int m = 0; m < facilities; m++)
                 solution[m] = solution2[m];
@@ -509,6 +511,7 @@ void VND(std::vector <struct point> clients, int facilities, int range){
     }
 
     //Printando a melhor solução:
+    /*
     std::cout << "\n\nMelhor solução obtida: \n";
 
     int acc = 0;
@@ -524,7 +527,53 @@ void VND(std::vector <struct point> clients, int facilities, int range){
     }
 
     std::cout << "\n\n"<< acc <<" Pontos alcançados\n";
+    */
+    return s1value;
 }
+
+void Grasp(std::vector <struct point> clients, int facilities, int range){
+
+    std::vector <int> finalSolution [facilities];
+
+    int finalValue = VND(clients, facilities, range, finalSolution);
+    std::cout << "\n\n Encontrou solução de valor "<<finalValue << " com VND";
+
+    for(int i = 0; i < NUM_GRASP_ITERATIONS; i++){
+
+        std::vector <int> candidateSolution [facilities];
+
+        int cValue = VND(clients, facilities, range, candidateSolution);
+
+        std::cout << "\n\n Encontrou solução de valor "<<cValue << " com VND";
+        if(cValue > finalValue){
+            for(int m = 0; m < facilities; m++)
+                finalSolution[m] = candidateSolution[m];
+
+            std::cout << "\n\n Trocando solução de valor "<< finalValue << " por uma com valor "<< cValue;
+            finalValue = cValue;
+
+            
+        }
+    }
+
+    //Printando a melhor solução:
+    std::cout << "\n\nMelhor solução obtida com GRASP: \n";
+
+    int acc = 0;
+
+    for(int i = 0; i < facilities; i++){
+
+        std::cout << "\nFac ponto " << finalSolution[i][0] << ": (" <<clients[ ((finalSolution[i])[0]) ].x << ", " << clients[ ((finalSolution[i])[0]) ].y << ")  || Pontos: ";
+
+        for(int j = 1; j < finalSolution[i].size(); j++){
+            std::cout<< ((finalSolution[i])[j]) << ", ";
+        }
+        acc += (finalSolution[i]).size()-1;
+    }
+
+    std::cout << "\n\n"<< acc <<" Pontos alcançados\n";
+}
+
 
 int main(){
 
@@ -534,8 +583,12 @@ int main(){
      
     std::cout << "\n\nNfac: " << nfacilities << "\nRange: " << range;
 
-    
-    VND(clients, nfacilities, range);
+    std::srand(std::time(0));
+
+    Grasp(clients, nfacilities, range);
+    //std::vector <int> solution [nfacilities];
+
+    //VND(clients, nfacilities, range, solution);
     
     // for(int i = 0; i < clients.size();i++){
 
