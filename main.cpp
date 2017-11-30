@@ -7,7 +7,7 @@
 #include <map>
 
 #define ALPHA 0.5
-#define NUM_GRASP_ITERATIONS 10
+#define NUM_GRASP_ITERATIONS 1000
 
  std::vector <struct point> ReadFile(const char * str, int * nfacilities, int * range){
     
@@ -579,7 +579,7 @@ int main(){
 
     int nfacilities, range;
     std::vector <struct point> clients;
-    clients = ReadFile("coord402.txt", &nfacilities, &range);
+    clients = ReadFile("coord324.txt", &nfacilities, &range);
      
     std::cout << "\n\nNfac: " << nfacilities << "\nRange: " << range;
 
