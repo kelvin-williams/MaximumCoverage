@@ -579,7 +579,7 @@ int main(){
 
     int nfacilities, range;
     std::vector <struct point> clients;
-    clients = ReadFile("coord324.txt", &nfacilities, &range);
+    clients = ReadFile("coord402.txt", &nfacilities, &range);
      
     std::cout << "\n\nNfac: " << nfacilities << "\nRange: " << range;
 
